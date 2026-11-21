@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cipher Quarry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--ink:#0b1424;--stone:#3b3b3b;--st2:#2a2a2a;--hi:#7a7a7a;--lo:#161616;--bone:#f1ecdd;--dim:#9aa6b8;--sig:#7ed34a;--hot:#ff5a36;--amb:#ffb627;--gold:#f5c542;--cool:#5be3cb;
+--d:"Press Start 2P",monospace;--t:"IBM Plex Sans",system-ui,sans-serif}
+*{box-sizing:border-box}
+html{background:var(--ink)}
+body{margin:0;min-height:100vh;color:var(--bone);font-family:var(--t);-webkit-user-select:none;user-select:none;
+background:radial-gradient(circle at 20% 30%,#fff 0 1px,transparent 2px) 0 0/140px 120px,radial-gradient(circle at 70% 60%,#9db4ff 0 1px,transparent 2px) 0 0/190px 170px,linear-gradient(#0b1424,#1a2c4a)}
+input,select{-webkit-user-select:text;user-select:text}
+body.urgent{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:inset 0 0 0 0 rgba(255,90,54,0)}50%{box-shadow:inset 0 0 0 8px rgba(255,90,54,.85)}}
+#app{max-width:780px;margin:0 auto;padding:14px 16px 60px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:6px 0 14px;margin-bottom:16px}
+.mark{font-family:var(--d);font-size:20px;line-height:1.3;text-shadow:3px 3px 0 #000}
+.mark b{color:var(--sig);font-weight:400}
+.lab{font-family:var(--d);font-size:9px;line-height:1.7;letter-spacing:.5px;text-transform:uppercase;color:var(--dim)}
+.mini{font:9px var(--d);background:var(--st2);border:3px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);color:var(--bone);padding:8px;cursor:pointer}
+h2{font-family:var(--d);font-weight:400;font-size:18px;line-height:1.4;margin:0 0 8px;text-shadow:3px 3px 0 #000}
+p{line-height:1.5;margin:6px 0}
+.box{border:4px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);background:var(--stone);padding:16px;margin:16px 0}
+.box.sig{background:#4c8a2b}
+input,select{width:100%;padding:13px 14px;background:#111;border:4px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);color:var(--bone);font:600 17px var(--t);margin:8px 0;border-radius:0;outline:none}
+input:focus,select:focus{background:#1b1b1b}
+input::placeholder{color:#666}
+.go{font:13px/1.4 var(--d);color:#fff;text-shadow:2px 2px 0 #1b3a0a;background:#5da130;border:4px solid;border-color:#9be063 #2f5a14 #2f5a14 #9be063;padding:15px 20px;cursor:pointer}
+.go:hover{background:#6fb83a}.go:active{border-color:#2f5a14 #9be063 #9be063 #2f5a14;transform:translateY(2px)}
+.go:disabled{opacity:.4;pointer-events:none}
+.go.alt{background:#555;text-shadow:2px 2px 0 #000;border-color:#8a8a8a #222 #222 #8a8a8a}.go.alt:hover{background:#666}
+.go.full{width:100%;margin-top:8px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.tile{display:flex;width:100%;text-align:left;margin:12px 0;color:#fff;border:4px solid;font:600 18px var(--t);cursor:pointer;padding:0;text-shadow:2px 2px 0 rgba(0,0,0,.55)}
+.tile i{font:normal 18px var(--d);width:58px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35)}
+.tile span{padding:16px}
+.t0{background:#4c8a2b;border-color:#8fd05a #25470f #25470f #8fd05a}.t1{background:#8b5a2b;border-color:#c48a50 #4a2d10 #4a2d10 #c48a50}
+.t2{background:#6e6e6e;border-color:#b5b5b5 #3a3a3a #3a3a3a #b5b5b5}.t3{background:#c9a21f;border-color:#ffe27a #7a5f0a #7a5f0a #ffe27a}
+.tile:hover{filter:brightness(1.12)}
+.tile.on{outline:5px solid #fff;outline-offset:2px;transform:translateX(6px)}
+.tile.dead{pointer-events:none}
+.hud{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.time{font:56px/1 var(--d);color:var(--sig);text-shadow:4px 4px 0 #000;min-width:110px;text-align:right}
+.bar{height:20px;background:#000;border:4px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);margin:12px 0 16px}.bar i{display:block;height:100%;width:100%;background:var(--sig)}
+.q{font:600 25px/1.3 var(--t);margin:6px 0 14px;min-height:66px;word-break:break-word;text-shadow:2px 2px 0 #000}
+.qh .q{font-size:34px}
+.code{display:flex;gap:10px;margin:14px 0}
+.code span{flex:1;max-width:84px;aspect-ratio:1;background:#111;color:var(--gold);font:36px var(--d);display:flex;align-items:center;justify-content:center;border:4px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.slots{display:flex;gap:6px;margin:8px 0}.slots i{width:20px;height:20px;background:#111;border:3px solid #000}.slots i.f{background:var(--gold)}
+.verdict{font:30px/1.3 var(--d);text-shadow:3px 3px 0 #000}.verdict.w{color:var(--hot)}.verdict.n{color:var(--dim)}
+.pts{font:22px var(--d);margin-top:10px}
+.lb{display:flex;align-items:center;gap:10px;border:4px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);background:var(--stone);margin:8px 0;padding:8px 12px}
+.lb.me{background:#4c8a2b}
+.lb .rk{font:14px var(--d);width:30px;color:var(--gold)}
+.lb b{flex:1;font-size:17px}
+.lb .sc{font:14px var(--d)}
+.lb .dl{font:8px var(--d);color:var(--cool);min-width:56px;text-align:right}.lb .dl.dn{color:var(--hot)}
+.gain{font:9px var(--d);color:var(--gold)}.stk{font:8px var(--d);color:var(--amb)}
+.host{position:sticky;top:0;z-index:5;background:#111;border:4px solid var(--sig);padding:12px;margin:0 0 16px}
+.sq{display:inline-flex;gap:4px;margin:0 8px}.sq i{width:16px;height:16px;background:#111;border:3px solid #000}.sq i.f{background:var(--sig)}
+.teamc{display:flex;justify-content:space-between;align-items:center;gap:10px;border:4px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);background:var(--stone);padding:10px 14px;margin:10px 0}
+.teamc .cd{font:22px var(--d);color:var(--gold)}
+.pod{display:flex;align-items:flex-end;gap:10px;margin:24px 0}
+.pod div{flex:1;text-align:center;background:var(--stone);border:4px solid;border-color:var(--hi) var(--lo) var(--lo) var(--hi);padding:10px 6px}
+.pod .p1{background:#c9a21f;height:200px;color:#000}.pod .p2{height:150px}.pod .p3{height:115px}
+.pod .n{font:26px var(--d)}.pod b{display:block;word-break:break-word}
+.sky{display:flex;align-items:flex-end;gap:12px;overflow-x:auto;padding:12px 12px 0;margin:10px 0;min-height:130px;background:linear-gradient(#10203a,#2a4a78);border:4px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo)}
+.col{display:flex;flex-direction:column-reverse;align-items:center;min-width:58px}
+.col .nm{font:7px/1.4 var(--d);color:#fff;background:#4c8a2b;border:3px solid #25470f;width:100%;text-align:center;padding:4px 2px;overflow:hidden;white-space:nowrap;text-overflow:clip}
+.blk{width:44px;height:15px;border:2px solid rgba(0,0,0,.4);animation:drop .35s both}
+@keyframes drop{from{transform:translateY(-40px);opacity:0}to{transform:none;opacity:1}}
+.spr{background:none;border:0;padding:2px}.spr svg{display:block;image-rendering:pixelated}
+.pick .spr{border:4px solid var(--lo);background:#222;cursor:pointer;padding:4px}.pick .spr.on{border-color:var(--gold);background:#4c8a2b}
+.hop{animation:hop .6s infinite}@keyframes hop{50%{transform:translateY(-8px)}}
+#ov{position:fixed;inset:0;background:var(--hot);color:#000;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;z-index:99}
+#ov h2{font-size:26px;text-shadow:none}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--hot);color:#000;font:9px/1.6 var(--d);padding:14px 18px;border:4px solid #000;display:none;z-index:50;max-width:90vw}
+.link{background:none;border:0;color:var(--dim);font:8px var(--d);text-decoration:underline;cursor:pointer;padding:0}
+@media (max-width:520px){.time{font-size:40px}.verdict{font-size:22px}.q{font-size:21px}.mark{font-size:15px}}
+</style></head><body>
+<div id="app"></div>
+<div id="ov"><div><h2 id="ovh">Window left</h2><p id="ovt"></p><br><button class="go alt" onclick="document.getElementById('ov').style.display='none'">Back to the game</button></div></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const C={s:null,draft:null,recv:0,key:'',warn:false,qk:'',ws:null,prev:{},dec:'',cnt:'',tick:-1,hd:false,muted:false,live:false};
+let id=localStorage.cqid;if(!id){id=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.cqid=id}
+const send=o=>C.ws&&C.ws.readyState===1&&C.ws.send(JSON.stringify(o));
+const L='ABCD';
+// ---- sound ----
+let ac;const beep=(f,d,ty='square',v=.04)=>{if(C.muted)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=ty;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}};
+function mute(){C.muted=!C.muted;render(true)}
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',3200)}
+// ---- text decode effect ----
+function decode(el,txt){if(!el)return;const ch='ABCDEF0123456789#%&*+=<>/';let f=0;const n=Math.min(16,Math.max(8,txt.length/5|0));
+ const iv=setInterval(()=>{f++;const r=Math.floor(txt.length*f/n);el.textContent=txt.slice(0,r)+[...txt.slice(r)].map(c=>c===' '?' ':ch[Math.random()*ch.length|0]).join('');if(f>=n){clearInterval(iv);el.textContent=txt}},38)}
+function countUp(el,to){if(!el)return;const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/800);el.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
+const ranks=ts=>Object.fromEntries(ts.map((t,i)=>[t.name,i]));
+// ---- connection ----
+function connect(){
+ const ws=C.ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+ ws.onopen=()=>{C.live=true;send({t:'hello',id,pin:sessionStorage.pin});};
+ ws.onmessage=e=>{const m=JSON.parse(e.data);
+  if(m.t==='err'){if(m.m==='Wrong host PIN')delete sessionStorage.pin;toast(m.m);return}
+  C.s=m;C.recv=performance.now();
+  const k=m.phase==='question'?m.qi+':'+m.question.q:'';
+  if(k&&k!==C.qk){C.qk=k;C.draft=null;C.dbl=false;C.warn=false;C.prev=ranks(m.teams);C.tick=-1}
+  render()};
+ ws.onclose=()=>{C.live=false;render(true);setTimeout(connect,1500)};
+}
+const SP=[["robot","#9aa5b1","#4b5563","#ff5a36",["...cc...","..aaaa..",".aaaaaa.","akkaakka","aaaaaaaa","abbbbbba",".aaaaaa.","..b..b.."]],
+["fox","#ff8c1a","#7a3b0a","#fff",["a......a","aa....aa","aaaaaaaa","akkaakka","aaaaaaaa",".acccca.","..cbbc..","...bb..."]],
+["ghost","#e8eefc","#9aa7d1","#ff9ec7",["..aaaa..",".aaaaaa.","akkaakka","aaaaaaaa","accaacca","aaabbaaa","aaaaaaaa","a.aa.aa."]],
+["wizard","#7c3aed","#f2c9a0","#f5c542",["...aa...","..aaaa..",".aaaaaa.","cccccccc",".bkbbkb.",".bbbbbb.",".bbccbb.","..wwww.."]],
+["frog","#4ade80","#166534","#ff9ec7",["..aa.aa.","akkaakka","aaaaaaaa","aaaaaaaa","abbbbbba","aaaaaaaa",".aaaaaa.",".a....a."]],
+["knight","#cbd5e1","#64748b","#ef4444",["...cc...","..cccc..",".aaaaaa.",".abbbba.",".akbbka.",".aaaaaa.",".abbbba.","..aaaa.."]]];
+function sprite(i,px){const s=SP[(i|0)%6],c={a:s[1],b:s[2],c:s[3],k:'#111',w:'#fff'};let r='';s[4].forEach((row,y)=>[...row].forEach((ch,x)=>{if(ch!=='.')r+=`<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${c[ch]}"/>`}));
+ return `<svg width="${px}" height="${px}" viewBox="0 0 8 8" shape-rendering="crispEdges">${r}</svg>`}
+// ---- views ----
+function me(){const s=C.s;return s.me&&s.teams.find(t=>t.code===s.me.code)}
+function board(){const s=C.s,mx=Math.max(1,...s.teams.map(t=>t.total)),mine=s.me&&s.me.code;
+ if(!s.teams.length)return '<p class="lab">No crews yet.</p>';
+ const lay=['#6e6e6e','#6e6e6e','#8b5a2b','#8b5a2b','#4c8a2b'];
+ const sky=s.teams.map((t,i)=>{const n=1+Math.round(t.total/mx*11);let b='';for(let k=0;k<n;k++)b+=`<div class="blk" style="background:${k===n-1&&i===0?'#f5c542':k>=n-1?'#4c8a2b':k>=n-3?'#8b5a2b':'#6e6e6e'};animation-delay:${k*40}ms"></div>`;
+  return `<div class="col"><div class="nm">${esc(t.name.slice(0,7))}</div>${b}<div class="${i===0?'hop':''}">${sprite(t.av,44)}</div></div>`}).join('');
+ const rows=s.teams.map((t,i)=>{const pv=C.prev[t.name],d=s.phase==='reveal'&&pv!=null?pv-i:0;
+  return `<div class="lb ${mine&&t.code===mine?'me':''}"><span class="rk">${i+1}</span>${sprite(t.av,28)}<b>${esc(t.name)}</b>${t.streak>1?`<span class="stk">STREAK ${t.streak}</span>`:''}${s.phase==='reveal'&&t.last?`<span class="gain">+${t.last}</span>`:''}<span class="sc">${t.total}</span><span class="dl ${d<0?'dn':''}">${d>0?'UP '+d:d<0?'DOWN '+(-d):''}</span></div>`}).join('');
+ return `<div class="sky">${sky}</div>${rows}`}
+function head(){return `<div class="top"><div class="mark" id="mk">Cipher <b>Quarry</b></div><div class="row" style="gap:8px"><span class="lab">${C.live?'connected':'reconnecting'}</span><button class="mini" onclick="mute()">sound ${C.muted?'off':'on'}</button></div></div>`}
+function hostBar(){const s=C.s;let b='';
+ if(s.phase==='lobby')b=`<button class="go" onclick="send({t:'start'})" ${s.teams.length?'':'disabled'}>Fire question 1</button>`;
+ if(s.phase==='question')b=`<span class="lab">locked in</span><span class="sq">${s.teams.map((t,i)=>`<i class="${i<s.answered?'f':''}"></i>`).join('')}</span><button class="go alt" onclick="send({t:'reveal'})">Cut the clock</button>`;
+ if(s.phase==='reveal')b=s.qi+1<s.n?`<button class="go" onclick="send({t:'next'})">Next question</button>`:`<button class="go" onclick="send({t:'finish'})">Show the podium</button>`;
+ return `<div class="host"><div class="row"><span class="lab" style="color:var(--sig)">Host console</span>${b}<span style="flex:1"></span><button class="link" onclick="if(confirm('Wipe all crews and scores?'))send({t:'reset'})">reset everything</button></div></div>`}
+function lobby(){const s=C.s;
+ if(s.host)return `<div class="box"><div class="lab">Students open</div><h2 style="font-size:28px;word-break:break-all">${esc(location.host)}</h2><p>They pick a handle, then either start a crew or enter a crew code. Fire the first question when the board below fills up.</p></div>
+ ${s.teams.map(t=>`<div class="teamc"><div><b style="font-size:20px">${esc(t.name)}</b><div class="slots">${[0,1,2,3,4].map(i=>`<i class="${i<t.size?'f':''}"></i>`).join('')}</div></div><div class="cd">${t.code}</div></div>`).join('')||'<p class="lab">No crews yet. Waiting for the first lead to appear.</p>'}`;
+ if(s.me){const t=me();return `<div class="box sig"><div class="lab" style="color:#3b4410">Crew</div>${sprite(t.av,64)}<h2>${esc(t.name)}</h2><p><b>Crew code</b> (send this to your teammates)</p><div class="code">${[...s.me.code].map(c=>`<span>${c}</span>`).join('')}</div><div class="slots">${[0,1,2,3,4].map(i=>`<i class="${i<t.size?'f':''}" style="${i<t.size?'background:var(--ink);border-color:var(--ink)':'border-color:var(--ink)'}"></i>`).join('')}</div><p>${t.members.map(esc).join(', ')}</p></div>
+  <p class="lab">${s.me.leader?'You are the crew lead. Only your answers count.':'Your crew lead submits the answers. You talk.'} Waiting for the host to fire question 1.</p>`}
+ return `<h2>Pick a role</h2><p>Enter your handle first, then choose one of the two doors below.</p><input id="nm" maxlength="20" placeholder="Your handle" value="${esc(C.nm||'')}" oninput="C.nm=this.value">
+ <div class="box"><h2 style="font-size:26px">Lead a crew</h2><p>You create the crew and submit every answer. Up to 5 people per crew.</p><input id="tn" maxlength="20" placeholder="Crew name" value="${esc(C.tn||'')}" oninput="C.tn=this.value"><div class="lab">Pick your fighter</div><div class="row pick" style="gap:8px;margin:8px 0">${[0,1,2,3,4,5].map(i=>`<button class="spr ${(C.av||0)===i?'on':''}" onclick="C.av=${i};render(true)">${sprite(i,44)}</button>`).join('')}</div><button class="go full" onclick="send({t:'create',name:$('#nm').value,team:$('#tn').value,av:C.av||0})">Start a crew</button></div>
+ <div class="box"><h2 style="font-size:26px">Join a crew</h2><p>Your lead has a 4-character code on their screen.</p><input id="jc" maxlength="4" placeholder="CODE" style="text-transform:uppercase;letter-spacing:8px;text-align:center;font-size:24px"><button class="go full alt" onclick="send({t:'join',name:$('#nm').value,code:$('#jc').value})">Enter crew</button></div>
+ <p><button class="link" onclick="hostLogin()">host entrance</button></p>`}
+function hostLogin(){const p=prompt('Host PIN');if(p){sessionStorage.pin=p;send({t:'hello',id,pin:p})}}
+function stat(){const s=C.s,t=me();if(!t)return '';const r=s.teams.indexOf(t)+1;return `<div class="lab" style="margin-bottom:8px">${esc(t.name)} / ${t.total} pts / rank ${r} of ${s.teams.length}</div>`}
+function tiles(q,live){const d=C.draft;return q.o.map((o,i)=>`<button class="tile t${i} ${d===i?'on':''} ${live?'':'dead'}" ${live?`onclick="C.draft=${i};C.key='';render()"`:''}><i>${L[i]}</i><span>${esc(o)}</span></button>`).join('')}
+function question(){const s=C.s,q=s.question,host=s.host,tag={mcq:'Multiple choice',odd:'Odd one out',num:'Numerical',match:'Match up'}[q.t];
+ let h=`<div class="${host?'qh':''}">${host?'':stat()}<div class="hud"><div><div class="lab">Q${s.qi+1} of ${s.n} / ${esc(q.tp)}</div><div class="lab" style="color:var(--sig)">${tag}${s.qi===s.n-1?' / FINAL: DOUBLE POINTS':''}</div></div><div class="time" id="tm">${Math.ceil(s.left/1000)}</div></div><div class="bar"><i id="tb"></i></div><div class="q" id="qt">${esc(q.q)}</div>`;
+ const inert=()=>q.o?tiles(q,false):`<div class="box">${q.l.map(esc).join('<br>')}</div><div class="lab">${q.r.map(esc).join(' / ')}</div>`;
+ if(host)return h+inert()+'</div>';
+ if(!s.me)return h+'<p class="lab">You are not in a crew. Watch the board.</p></div>';
+ if(s.mine)return h+`<div class="box sig"><h2>Locked at ${(s.mine.ms/1000).toFixed(1)}s</h2><p>Waiting on the other crews.</p></div></div>`;
+ if(!s.me.leader)return h+inert()+'<p class="lab" style="margin-top:14px">Talk it through. Your crew lead hits lock.</p></div>';
+ const d=C.draft;
+ if(q.o)h+=tiles(q,true);
+ if(q.t==='num')h+=`<input id="nv" type="number" step="any" inputmode="decimal" placeholder="Type a number" value="${d??''}" oninput="C.draft=this.value" style="font-size:28px">`;
+ if(q.t==='match')h+=q.l.map((x,i)=>`<div class="lab" style="margin-top:10px">${esc(x)}</div><select onchange="C.draft=C.draft||[];C.draft[${i}]=this.value"><option value="">Pick one</option>${q.r.map((r,j)=>`<option value="${j}" ${d&&d[i]==j?'selected':''}>${esc(r)}</option>`).join('')}</select>`).join('');
+ return h+(s.me.dbl?`<button class="go full alt" onclick="C.dbl=!C.dbl;C.key='';render()">Double down: ${C.dbl?'ARMED (x2 if right, one use)':'off'}</button>`:'')+`<button class="go full" onclick="lock()">Lock it in</button></div>`}
+function lock(){const q=C.s.question,d=C.draft;
+ if(d==null||d===''||q.t==='match'&&(!Array.isArray(d)||d.length<q.l.length||[...d].some(x=>x===undefined||x==='')))return toast('Answer every part first.');
+ send({t:'answer',dbl:!!C.dbl,ans:q.t==='match'?d.join(','):String(d)});beep(660,.12)}
+function reveal(){const s=C.s,q=s.question,t=me(),m=s.mine;
+ let v='';
+ if(!s.host&&s.me){const ok=m&&m.ok,w=ok?'Cracked':m?'Wrong key':'Time out';v=`<div class="box ${ok?'sig':''}"><div class="verdict ${ok?'':m?'w':'n'}">${w}</div><div class="pts">+<span id="pp">${t?t.last:0}</span> pts</div>${m?`<p class="lab" style="color:inherit">answered in ${(m.ms/1000).toFixed(1)}s</p>`:''}</div>`}
+ return `${s.host?'':stat()}${v}<div class="box"><div class="lab">The key</div><p style="font-size:22px;font-weight:600">${esc(s.key).replace(/\n/g,'<br>')}</p></div><h2>Standings</h2>${board()}`}
+function done(){const s=C.s,t=s.teams,p=(i,c)=>t[i]?`<div class="${c}"><div class="n">${i+1}</div><b>${esc(t[i].name)}</b><span class="lab" style="color:inherit">${t[i].total} pts</span></div>`:'';
+ return `<h2>Final standings</h2><div class="pod">${p(1,'p2')}${p(0,'p1')}${p(2,'p3')}</div>${board()}`}
+// ---- render ----
+function render(force){
+ const s=C.s;if(!s)return $('#app').innerHTML=head()+'<p class="lab">Opening channel...</p>';
+ const k=s.phase+'|'+s.qi+'|'+(s.me&&s.me.code)+'|'+!!s.mine+'|'+C.warn;
+ if(!force&&s.phase==='question'&&!s.host){if(k===C.key)return;C.key=k}else C.key='';
+ let h=head();if(s.host)h+=hostBar();
+ h+=s.phase==='lobby'?lobby():s.phase==='question'?question():s.phase==='reveal'?reveal():done();
+ $('#app').innerHTML=h;
+ if(!C.hd){C.hd=true;decode($('#mk'),'CIPHER QUARRY');setTimeout(()=>{const m=$('#mk');if(m)m.innerHTML='Cipher <b>Quarry</b>'},700)}
+ if(s.phase!=='question')document.body.classList.remove('urgent');
+ if(s.phase==='question'&&C.dec!==C.qk){C.dec=C.qk;decode($('#qt'),s.question.q);beep(300,.2,'sawtooth')}
+ if(s.phase==='reveal'&&C.cnt!==C.qk+'r'){C.cnt=C.qk+'r';const t=me();countUp($('#pp'),t?t.last:0);if(s.me)(s.mine&&s.mine.ok)?(beep(523,.12),setTimeout(()=>beep(784,.25),120)):beep(130,.4,'sawtooth')}
+}
+setInterval(()=>{const s=C.s;if(!s||s.phase!=='question')return;const ms=Math.max(0,s.left-(performance.now()-C.recv)),f=ms/(s.question.s*1000),sec=Math.ceil(ms/1000),tm=$('#tm'),tb=$('#tb');
+ if(tm)tm.textContent=sec;if(tb){tb.style.width=f*100+'%';tb.style.background=f>.5?'var(--sig)':f>.25?'var(--amb)':'var(--hot)'}
+ if(tm)tm.style.color=f>.5?'var(--sig)':f>.25?'var(--amb)':'var(--hot)';
+ const u=sec<=5&&ms>0;document.body.classList.toggle('urgent',u&&!s.mine);
+ if(u&&sec!==C.tick){C.tick=sec;beep(880,.08)}},200);
+// ---- anti-cheat (deterrent) ----
+const flag=why=>{const s=C.s;if(!s||s.host||s.phase!=='question'||!s.me)return;C.warn=true;$('#ovt').textContent=why+' Your crew loses 150 points on this question.';$('#ov').style.display='flex';send({t:'flag'})};
+['copy','cut','paste','contextmenu','dragstart'].forEach(e=>document.addEventListener(e,ev=>ev.preventDefault()));
+document.addEventListener('selectstart',ev=>{if(!/INPUT|SELECT/.test(ev.target.tagName||''))ev.preventDefault()});
+document.addEventListener('keydown',ev=>{const k=ev.key.toLowerCase(),m=ev.ctrlKey||ev.metaKey;
+ if(k==='f12'||m&&ev.shiftKey&&'ijckn'.includes(k)||m&&'cvxausp'.includes(k))ev.preventDefault()},true);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flag('Tab switch detected.')});
+window.addEventListener('blur',()=>setTimeout(()=>{if(!document.hasFocus()&&!document.hidden)flag('You left the quiz window.')},300));
+setInterval(()=>{if(innerWidth<700)return;if(outerWidth-innerWidth>200||outerHeight-innerHeight>260)flag('Developer tools detected.')},1500);
+render();connect();
+</script></body></html>
