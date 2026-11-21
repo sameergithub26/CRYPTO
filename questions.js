@@ -1,0 +1,26 @@
+// Edit freely. types: mcq | odd | num | match.  k = answer (index / number / array of indexes). s = seconds.
+module.exports=[
+{t:'mcq',tp:'Intro to cryptography',q:'Which security goal does encryption mainly provide?',o:['Confidentiality','Availability','Accountability','Authorization'],k:0,s:20},
+{t:'mcq',tp:'Intro to cryptography',q:'Cryptanalysis is the study of…',o:['Designing new ciphers','Breaking ciphers without the key','Generating random keys','Compressing messages'],k:1,s:20},
+{t:'num',tp:'Caesar cipher',q:'Caesar cipher, shift = 5, A=0 … Z=25. Decrypt ciphertext C (2). What number is the plaintext letter?',k:23,s:35},
+{t:'odd',tp:'Substitution vs transposition',q:'Odd one out?',o:['Caesar','Vigenère','Rail Fence','Playfair'],k:2,s:25},
+{t:'mcq',tp:'Substitution cipher',q:'How many possible keys does a monoalphabetic substitution cipher have?',o:['26','25','26!','2^26'],k:2,s:25},
+{t:'mcq',tp:'Transposition',q:'A transposition cipher changes…',o:['The position of letters, not the letters','The letters, not their positions','Both letters and positions','Neither'],k:0,s:25},
+{t:'num',tp:'Hill cipher',q:'Hill cipher key K = [[3,3],[2,5]]. Encrypt "HI" = (7,8). What is the FIRST ciphertext number (3·7 + 3·8 mod 26)?',k:19,s:40},
+{t:'num',tp:'Hill cipher',q:'For K = [[3,3],[2,5]], what is det(K) mod 26?',k:9,s:35},
+{t:'mcq',tp:'Hill cipher',q:'A Hill cipher key matrix is valid only if its determinant is…',o:['Even','Coprime with 26','Equal to 26','Prime'],k:1,s:25},
+{t:'mcq',tp:'Block vs stream',q:'Which cipher type encrypts data one bit or byte at a time?',o:['Block cipher','Stream cipher','Hash function','Public-key cipher'],k:1,s:20},
+{t:'odd',tp:'Block vs stream',q:'Odd one out?',o:['AES','DES','RC4','Blowfish'],k:2,s:25},
+{boss:true,t:'match',tp:'DES, AES & friends',q:'Match the algorithm with its description',l:['DES','AES','RC4','SHA-256'],r:['Stream cipher','Feistel, 16 rounds','128-bit block, substitution-permutation network','Hash function'],k:[1,2,0,3],s:45},
+{t:'mcq',tp:'DES',q:'How many rounds does DES have?',o:['8','10','16','32'],k:2,s:20},
+{t:'num',tp:'AES',q:'How many rounds does AES-256 use?',k:14,s:25},
+{t:'mcq',tp:'AES',q:'Which AES step is the only non-linear one?',o:['SubBytes','ShiftRows','MixColumns','AddRoundKey'],k:0,s:30},
+{t:'num',tp:'RSA',q:'RSA with p = 5, q = 11, e = 3. Find the private exponent d.',k:27,s:60},
+{t:'num',tp:'RSA',q:'RSA with n = 33, e = 7. Encrypt message m = 2. Ciphertext = 2^7 mod 33 = ?',k:29,s:50},
+{boss:true,t:'mcq',tp:'RSA',q:'RSA security relies on the difficulty of…',o:['Discrete logarithms','Factoring a large composite number','Finding hash collisions','Brute-forcing a 56-bit key'],k:1,s:25},
+{t:'odd',tp:'Hashing',q:'Odd one out?',o:['MD5','SHA-1','SHA-256','RSA'],k:3,s:25},
+{t:'mcq',tp:'Hashing',q:'"Given h, it is infeasible to find any m with H(m) = h" describes…',o:['Preimage resistance','Collision resistance','Avalanche effect','Compression'],k:0,s:30},
+{t:'num',tp:'Diffie-Hellman',q:'DH with p = 23, g = 5. Alice’s secret a = 6. What public value A = g^a mod p does she send?',k:8,s:60},
+{t:'num',tp:'Diffie-Hellman',q:'p = 23. Alice’s secret a = 6, Bob’s public value B = 19. What is the shared key B^a mod 23?',k:2,s:60},
+{boss:true,t:'mcq',tp:'Diffie-Hellman',q:'Plain Diffie-Hellman is vulnerable to a man-in-the-middle attack because…',o:['The prime is public','The exchanged values are not authenticated','The key is too short','It uses symmetric keys'],k:1,s:25}
+];
