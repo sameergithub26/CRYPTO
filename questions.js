@@ -1,4 +1,4 @@
-// Edit freely. types: mcq | odd | num | match.  k = answer (index / number / array of indexes). s = seconds.
+// VERSION v3. Edit freely. types: mcq | odd | num | match.  k = answer (index / number / array of indexes). s = seconds.
 // hard:true = crew lead may "Risk it": x2 points if right, -300 if wrong.  boss:true = class-wide boss round.
 module.exports=[
 {t:'mcq',tp:'Intro to cryptography',q:'What is plaintext?',o:['The scrambled message','The original readable message','The secret key','The encryption algorithm'],k:1,s:15},
