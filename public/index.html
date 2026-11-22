@@ -91,7 +91,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>(
 const C={s:null,draft:null,recv:0,key:'',warn:false,qk:'',ws:null,prev:{},dec:'',cnt:'',tick:-1,hd:false,muted:false,live:false};
 let id=localStorage.cqid;if(!id){id=Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.cqid=id}
 const send=o=>C.ws&&C.ws.readyState===1&&C.ws.send(JSON.stringify(o));
-const L='ABCD';
+const L='ABCD',VER='v3';
 // ---- sound ----
 let ac;const beep=(f,d,ty='square',v=.04)=>{if(C.muted)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=ty;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(ac.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);o.stop(ac.currentTime+d)}catch(e){}};
 function mute(){C.muted=!C.muted;render(true)}
@@ -134,6 +134,8 @@ function pw(k){if(k==='freeze')send({t:'freeze',target:$('#ft').value});else sen
 function seq(a){a.forEach(([f,d,t,ty])=>setTimeout(()=>beep(f,d,ty||'square',.05),t))}
 function sfx(k){const m={hint:()=>seq([[880,.1,0],[1320,.15,90]]),shield:()=>seq([[440,.1,0],[660,.1,80],[880,.2,160]]),steal:()=>seq([[900,.08,0],[600,.08,70],[300,.15,140]]),freeze:()=>seq([[1200,.1,0,'triangle'],[800,.1,90,'triangle'],[400,.3,180,'triangle']])};if(m[k])m[k]()}
 let mi=0,mt;function music(){clearInterval(mt);if(!C.music)return;mt=setInterval(()=>{if(!C.s||C.s.phase!=='question')return;const f=[196,262,330,392,330,262,392,294][mi%8]*(mi%32<16?1:1.25);beep(f,.12,'square',.018);if(mi%2==0)beep(f/4,.22,'triangle',.05);mi++},150)}
+function vlogBox(){const v=C.s.vlog||[];return `<div class="box"><div class="row" style="justify-content:space-between"><div class="lab">Integrity log (${v.length})</div><button class="mini" onclick="dl()">download csv</button></div>${v.length?v.slice().reverse().map(e=>`<div class="lb" style="flex-wrap:wrap"><span class="lab" style="min-width:70px">${new Date(e.at).toLocaleTimeString()}</span><b style="font-size:14px">Q${e.qn} ${esc(e.student)} (${esc(e.crew)})</b><span class="lab">${esc(e.why)}</span><span class="gain" style="${e.refunded?'color:var(--cool)':''}">${e.refunded?'REFUNDED':e.pen?'-600':'logged'}</span>${e.pen&&!e.refunded?`<button class="mini" onclick="send({t:'refund',id:${e.id}})">refund</button>`:''}</div>`).join(''):'<p class="lab">No incidents.</p>'}</div>`}
+function dl(){const v=C.s.vlog||[],r=[['time','question','student','crew','event','penalty','refunded'],...v.map(e=>[new Date(e.at).toLocaleString(),e.qn,e.student,e.crew,e.why,e.pen?-600:0,e.refunded?'yes':'no'])];const b=new Blob([r.map(x=>x.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='integrity-log.csv';a.click()}
 function me(){const s=C.s;return s.me&&s.teams.find(t=>t.code===s.me.code)}
 function board(){const s=C.s,mx=Math.max(1,...s.teams.map(t=>t.total)),mine=s.me&&s.me.code;
  if(!s.teams.length)return '<p class="lab">No crews yet.</p>';
@@ -141,14 +143,14 @@ function board(){const s=C.s,mx=Math.max(1,...s.teams.map(t=>t.total)),mine=s.me
  const sky=s.teams.map((t,i)=>{const n=1+Math.round(t.total/mx*11);let b='';for(let k=0;k<n;k++)b+=`<div class="blk" style="background:${k===n-1&&i===0?'#f5c542':k>=n-1?'#4c8a2b':k>=n-3?'#8b5a2b':'#6e6e6e'};animation-delay:${k*40}ms"></div>`;
   return `<div class="col"><div class="nm">${esc(t.name.slice(0,7))}</div>${b}<div class="${t.ok===true?'hop':t.ok===false?'shake':''}">${sprite(t.av,44)}</div></div>`}).join('');
  const rows=s.teams.map((t,i)=>{const pv=C.prev[t.name],d=s.phase==='reveal'&&pv!=null?pv-i:0;
-  return `<div class="lb ${mine&&t.code===mine?'me':''}"><span class="rk">${i+1}</span>${sprite(t.av,28)}<b>${esc(t.name)}</b>${t.streak>1?`<span class="stk">STREAK ${t.streak}</span>`:''}${s.phase==='reveal'&&t.last?`<span class="gain">+${t.last}</span>`:''}<span class="sc">${t.total}</span><span class="dl ${d<0?'dn':''}">${d>0?'UP '+d:d<0?'DOWN '+(-d):''}</span></div>`}).join('');
+  return `<div class="lb ${mine&&t.code===mine?'me':''}"><span class="rk">${i+1}</span>${sprite(t.av,28)}<b>${esc(t.name)}</b>${t.streak>1?`<span class="stk">STREAK ${t.streak}</span>`:''}${s.phase==='reveal'&&t.last?`<span class="gain">${t.last>0?'+':''}${t.last}</span>`:''}<span class="sc">${t.total}</span><span class="dl ${d<0?'dn':''}">${d>0?'UP '+d:d<0?'DOWN '+(-d):''}</span></div>`}).join('');
  return `<div class="sky">${sky}</div>${rows}`}
-function head(){return `<div class="top"><div class="mark" id="mk">Cipher <b>Quarry</b></div><div class="row" style="gap:8px"><span class="lab">${C.live?'connected':'reconnecting'}</span><button class="mini" onclick="C.music=!C.music;music();render(true)">music ${C.music?'on':'off'}</button><button class="mini" onclick="mute()">sound ${C.muted?'off':'on'}</button></div></div>`}
+function head(){return `<div class="top"><div class="mark" id="mk">Cipher <b>Quarry</b></div><div class="row" style="gap:8px"><span class="lab">${VER} ${C.live?'connected':'reconnecting'}</span><button class="mini" onclick="C.music=!C.music;music();render(true)">music ${C.music?'on':'off'}</button><button class="mini" onclick="mute()">sound ${C.muted?'off':'on'}</button></div></div>`}
 function hostBar(){const s=C.s;let b='';
  if(s.phase==='lobby')b=`<button class="go" onclick="send({t:'start'})" ${s.teams.length?'':'disabled'}>Fire question 1</button>`;
  if(s.phase==='question')b=`<span class="lab">locked in</span><span class="sq">${s.teams.map((t,i)=>`<i class="${i<s.answered?'f':''}"></i>`).join('')}</span><button class="go alt" onclick="send({t:'reveal'})">Cut the clock</button>`;
  if(s.phase==='reveal')b=s.qi+1<s.n?`<button class="go" onclick="send({t:'next'})">Next question</button>`:`<button class="go" onclick="send({t:'finish'})">Show the podium</button>`;
- return `<div class="host"><div class="row"><span class="lab" style="color:var(--sig)">Host console</span>${b}<span style="flex:1"></span><button class="link" onclick="if(confirm('Wipe all crews and scores?'))send({t:'reset'})">reset everything</button></div></div>`}
+ return `<div class="host"><div class="row"><span class="lab" style="color:var(--sig)">Host console (page ${VER}, server ${s.ver||'OLD'})</span>${b}<span style="flex:1"></span><button class="link" onclick="if(confirm('Wipe all crews and scores?'))send({t:'reset'})">reset everything</button></div></div>`}
 function lobby(){const s=C.s;
  if(s.host)return `<div class="box"><div class="lab">Students open</div><h2 style="font-size:28px;word-break:break-all">${esc(location.host)}</h2><p>They pick a handle, then either start a crew or enter a crew code. Fire the first question when the board below fills up.</p></div>
  ${s.teams.map(t=>`<div class="teamc"><div><b style="font-size:20px">${esc(t.name)}</b><div class="slots">${[0,1,2,3,4].map(i=>`<i class="${i<t.size?'f':''}"></i>`).join('')}</div></div><div class="cd">${t.code}</div></div>`).join('')||'<p class="lab">No crews yet. Waiting for the first lead to appear.</p>'}`;
@@ -162,7 +164,7 @@ function hostLogin(){const p=prompt('Host PIN');if(p){sessionStorage.pin=p;send(
 function stat(){const s=C.s,t=me();if(!t)return '';const r=s.teams.indexOf(t)+1;return `<div class="lab" style="margin-bottom:8px">${esc(t.name)} / ${t.total} pts / rank ${r} of ${s.teams.length}</div>`}
 function tiles(q,live){const d=C.draft,hd=(C.s.me&&C.s.me.hide)||[];return q.o.map((o,i)=>`<button class="tile t${i} ${d===i?'on':''} ${live&&!hd.includes(i)?'':'dead'}" ${hd.includes(i)?'style="opacity:.18"':''} ${live&&!hd.includes(i)?`onclick="C.draft=${i};C.key='';render()"`:''}><i>${L[i]}</i><span>${esc(o)}</span></button>`).join('')}
 function question(){const s=C.s,q=s.question,host=s.host,tag={mcq:'Multiple choice',odd:'Odd one out',num:'Numerical',match:'Match up'}[q.t];
- let h=`<div class="${host?'qh':''}">${host?'':stat()}${map()}<div class="hud"><div><div class="lab">Q${s.qi+1} of ${s.n} / ${esc(q.tp)}</div><div class="lab" style="color:var(--sig)">${tag}${q.boss?' / BOSS ROUND':''}${s.qi===s.n-1?' / FINAL: DOUBLE POINTS':''}</div></div><div class="time" id="tm">${Math.ceil(s.left/1000)}</div></div><div class="bar"><i id="tb"></i></div><div class="q" id="qt">${esc(q.q)}</div>`;
+ let h=`<div class="${host?'qh':''}">${host?'':stat()}${map()}<div class="hud"><div><div class="lab">Q${s.qi+1} of ${s.n} / ${esc(q.tp)}</div><div class="lab" style="color:var(--sig)">${tag}${q.boss?' / BOSS ROUND':''}${q.hard?' / HARD: RISK OPTION':''}</div></div><div class="time" id="tm">${Math.ceil(s.left/1000)}</div></div><div class="bar"><i id="tb"></i></div><div class="q" id="qt">${esc(q.q)}</div>`;
  const inert=()=>q.o?tiles(q,false):`<div class="box">${q.l.map(esc).join('<br>')}</div><div class="lab">${q.r.map(esc).join(' / ')}</div>`;
  if(host)return h+inert()+feed()+'</div>';
  if(!s.me)return h+'<p class="lab">You are not in a crew. Watch the board.</p></div>';
@@ -172,13 +174,13 @@ function question(){const s=C.s,q=s.question,host=s.host,tag={mcq:'Multiple choi
  if(q.o)h+=tiles(q,true);
  if(q.t==='num')h+=`<input id="nv" type="number" step="any" inputmode="decimal" placeholder="Type a number" value="${d??''}" oninput="C.draft=this.value" style="font-size:28px">`;
  if(q.t==='match')h+=q.l.map((x,i)=>`<div class="lab" style="margin-top:10px">${esc(x)}</div><select onchange="C.draft=C.draft||[];C.draft[${i}]=this.value"><option value="">Pick one</option>${q.r.map((r,j)=>`<option value="${j}" ${d&&d[i]==j?'selected':''}>${esc(r)}</option>`).join('')}</select>`).join('');
- return h+(s.me.fz>0?'<div class="box" id="frz" style="background:#2a6f97"><div class="verdict">FROZEN</div></div>':'')+powers(q)+(s.me.dbl?`<button class="go full alt" onclick="C.dbl=!C.dbl;C.key='';render()">Double down: ${C.dbl?'ARMED (x2 if right, one use)':'off'}</button>`:'')+`<button class="go full" onclick="lock()">Lock it in</button></div>`}
+ return h+(s.me.fz>0?'<div class="box" id="frz" style="background:#2a6f97"><div class="verdict">FROZEN</div></div>':'')+powers(q)+(q.hard?`<button class="go full alt" onclick="C.dbl=!C.dbl;C.key='';render()">Risk it: ${C.dbl?'ARMED. x2 if right, -300 if wrong':'off. Tap for x2 / -300'}</button>`:'')+`<button class="go full" onclick="lock()">Lock it in</button></div>`}
 function lock(){const q=C.s.question,d=C.draft;
  if(d==null||d===''||q.t==='match'&&(!Array.isArray(d)||d.length<q.l.length||[...d].some(x=>x===undefined||x==='')))return toast('Answer every part first.');
  send({t:'answer',dbl:!!C.dbl,ans:q.t==='match'?d.join(','):String(d)});beep(660,.12)}
 function reveal(){const s=C.s,q=s.question,t=me(),m=s.mine;
  let v='';
- if(!s.host&&s.me){const ok=m&&m.ok,w=ok?'Cracked':m?'Wrong key':'Time out';v=`<div class="box ${ok?'sig':''}"><div class="${ok?'hop':m?'shake':''}" style="float:right">${sprite((s.teams.find(x=>x.code===s.me.code)||{}).av,72)}</div><div class="verdict ${ok?'':m?'w':'n'}">${w}</div><div class="pts">+<span id="pp">${t?t.last:0}</span> pts</div>${m?`<p class="lab" style="color:inherit">answered in ${(m.ms/1000).toFixed(1)}s</p>`:''}</div>`}
+ if(!s.host&&s.me){const ok=m&&m.ok,w=ok?'Cracked':m?'Wrong key':'Time out';v=`<div class="box ${ok?'sig':''}"><div class="${ok?'hop':m?'shake':''}" style="float:right">${sprite((s.teams.find(x=>x.code===s.me.code)||{}).av,72)}</div><div class="verdict ${ok?'':m?'w':'n'}">${w}</div><div class="pts">${t&&t.last<0?'':'+'}<span id="pp">${t?t.last:0}</span> pts</div>${s.me.pen?`<p class="lab" style="color:var(--hot)">Includes -${600*s.me.pen} for leaving the quiz</p>`:''}${m?`<p class="lab" style="color:inherit">answered in ${(m.ms/1000).toFixed(1)}s</p>`:''}</div>`}
  return `${s.host?'':stat()}${map()}${v}<div class="box"><div class="lab">The key</div><p style="font-size:22px;font-weight:600">${esc(s.key).replace(/\n/g,'<br>')}</p></div>${bossBar()}${feed()}<h2>Standings</h2>${board()}`}
 function done(){const s=C.s,t=s.teams,p=(i,c)=>t[i]?`<div class="${c}"><div class="n">${i+1}</div><b>${esc(t[i].name)}</b><span class="lab" style="color:inherit">${t[i].total} pts</span></div>`:'';
  return `<h2>Final standings</h2><div class="pod">${p(1,'p2')}${p(0,'p1')}${p(2,'p3')}</div>${board()}`}
@@ -189,6 +191,7 @@ function render(force){
  if(!force&&s.phase==='question'&&!s.host){if(k===C.key)return;C.key=k}else C.key='';
  let h=head();if(s.host)h+=hostBar();
  h+=s.phase==='lobby'?lobby():s.phase==='question'?question():s.phase==='reveal'?reveal():done();
+ if(s.host&&s.phase!=='lobby')h+=vlogBox();
  $('#app').innerHTML=h;
  if(!C.hd){C.hd=true;decode($('#mk'),'CIPHER QUARRY');setTimeout(()=>{const m=$('#mk');if(m)m.innerHTML='Cipher <b>Quarry</b>'},700)}
  if(s.phase!=='question')document.body.classList.remove('urgent');
@@ -201,13 +204,15 @@ setInterval(()=>{const s=C.s;if(!s||s.phase!=='question')return;const fl=s.me?s.
  const u=sec<=5&&ms>0;document.body.classList.toggle('urgent',u&&!s.mine);
  if(u&&sec!==C.tick){C.tick=sec;beep(880,.08)}},200);
 // ---- anti-cheat (deterrent) ----
-const flag=why=>{const s=C.s;if(!s||s.host||s.phase!=='question'||!s.me)return;C.warn=true;$('#ovt').textContent=why+' Your crew loses 150 points on this question.';$('#ov').style.display='flex';send({t:'flag'})};
-['copy','cut','paste','contextmenu','dragstart'].forEach(e=>document.addEventListener(e,ev=>ev.preventDefault()));
+const flag=(why,kind)=>{const s=C.s;if(!s||s.host||s.phase!=='question'||!s.me)return;
+ if(kind==='log'){send({t:'flag',kind:'log',why});return}
+ if(Date.now()-(C.lf||0)<3000)return;C.lf=Date.now();C.warn=true;$('#ovh').textContent='Penalty: -600';$('#ovt').textContent=why+' This is logged for your teacher. Your crew loses 600 points.';$('#ov').style.display='flex';send({t:'flag',kind:'pen',why})};
+['copy','cut','paste','contextmenu','dragstart'].forEach(e=>document.addEventListener(e,ev=>{ev.preventDefault();if(e!=='dragstart')flag('Tried to '+e+' (blocked).','log')}));
 document.addEventListener('selectstart',ev=>{if(!/INPUT|SELECT/.test(ev.target.tagName||''))ev.preventDefault()});
 document.addEventListener('keydown',ev=>{const k=ev.key.toLowerCase(),m=ev.ctrlKey||ev.metaKey;
- if(k==='f12'||m&&ev.shiftKey&&'ijckn'.includes(k)||m&&'cvxausp'.includes(k))ev.preventDefault()},true);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)flag('Tab switch detected.')});
-window.addEventListener('blur',()=>setTimeout(()=>{if(!document.hasFocus()&&!document.hidden)flag('You left the quiz window.')},300));
-setInterval(()=>{if(innerWidth<700)return;if(outerWidth-innerWidth>200||outerHeight-innerHeight>260)flag('Developer tools detected.')},1500);
+ if(k==='f12'||m&&ev.shiftKey&&'ijc'.includes(k)||m&&k==='u'){ev.preventDefault();flag('Tried to open inspect or view-source.','pen')}else if(m&&'cvxasp'.includes(k)){ev.preventDefault();flag('Tried shortcut '+k.toUpperCase()+' (blocked).','log')}},true);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flag('Left the quiz (tab or app switch).','pen')});
+window.addEventListener('blur',()=>setTimeout(()=>{if(!document.hasFocus()&&!document.hidden)flag('Left the quiz window.','pen')},300));
+setInterval(()=>{if(innerWidth<700)return;if(outerWidth-innerWidth>200||outerHeight-innerHeight>260)flag('Developer tools detected.','pen')},1500);
 render();connect();
 </script></body></html>
